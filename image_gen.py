@@ -4,9 +4,11 @@ from typing import Final
 from dotenv import load_dotenv
 from osrparse import Replay
 from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+from roundcorner import add_rounded_corners
 #extract data from local replay
 
-r = Replay.from_path("./Kuina - Yooh - RPG [Collab Expert] (2024-03-03) Osu.osr")
+r = Replay.from_path("./My Angel Chino - BlackY vs. Yooh - HAVOX (Long Ver.) [RESPADOGI'S INSANE] (2024-06-05) Osu.osr")
 
 beatmap_hash = r.beatmap_hash
 player = r.username
@@ -15,34 +17,56 @@ c300 = r.count_300
 c100 = r.count_100
 c50 = r.count_50
 c0 = r.count_miss
+username = r.username
 play_accuracy = (300*(c300) + 100*(c100) + 50*(c50)) / (300*(c300 + c100 + c50 + c0))
-
-print(f"c100: {c100}, {type(c100)}")
-print(f"c50: {c50}, {type(c50)}")
-print(f"c0: {c0}, {type(c0)}")
 
 #extract data from beatmap online
 load_dotenv()
 userAPI: Final[str] = os.getenv("osu_API")
 url = f"https://osu.ppy.sh/api/get_beatmaps?k={userAPI}&h={beatmap_hash}"
 
-print(url)
+beatmap_data = requests.get(url)
+if beatmap_data.status_code == 200:
+    bdata = beatmap_data.json()
+    beatmap_name = bdata[0]['title']
+    max_combo = str(bdata[0]['max_combo'])
+    diff_name = bdata[0]['version']
+    circle_size = bdata[0]['diff_size']
+    overall_diff = bdata[0]['diff_overall']
+    approach_rate = bdata[0]['diff_approach']
+    drain_HP = bdata[0]['diff_drain']
+    beatmap_BPM = bdata[0]['bpm']
+    mapper = bdata[0]['creator']
+    star_rating = float(bdata[0]['difficultyrating'])
+    map_status = bdata[0]['approved']
+else: 
+    print(f"There is something wrong, probably peppy got dunked")
 
-response = requests.get(url)
-if response.status_code == 200:
-    data = response.json()
-    beatmap_name = data[0]['title']
-    max_combo = str(data[0]['max_combo'])
-    diff_name = data[0]['version']
-    circle_size = data[0]['diff_size']
-    overall_diff = data[0]['diff_overall']
-    approach_rate = data[0]['diff_approach']
-    drain_HP = data[0]['diff_drain']
-    beatmap_BPM = data[0]['bpm']
-    mapper = data[0]['creator']
-    star_rating = float(data[0]['difficultyrating'])
-    map_status = data[0]['approved']
+#extract player avatar
+if not os.path.exists(f'./player/{username}.png'):
+    user = f"https://osu.ppy.sh/api/get_user?k={userAPI}&u={username}"
+    user_data = requests.get(user)
+    if user_data.status_code == 200:
+        a_data = user_data.json()
+        userID = a_data[0]['user_id']
+    else: 
+        print(f"There is something wrong, probably peppy got dunked")
 
+        #fetching the avatar and download it
+
+    avatar = f"https://a.ppy.sh/{userID}"
+    avatar_data = requests.get(avatar)
+    if avatar_data.status_code == 200:
+        playerAvatar = Image.open(BytesIO(avatar_data.content))
+        playerAvatar.save(f'./player/{username}.png')
+
+        with Image.open(f'./player/{username}.png') as PlayerAvatar:
+            a = add_rounded_corners(PlayerAvatar, radius=50).resize(size=(180, 180))
+            a.save(f'./player/{username}.png')
+
+    else:
+        print(f"There is something wrong, probably peppy got dunked")
+    
 #Mod flags
 NoMod       =  0
 NoFail      =  1 << 0
@@ -206,6 +230,9 @@ elif map_status == "4":
     loved = Image.open('./statics/loved.png')
     background.paste(loved, [1675, 17], loved)
 
+#get the player avatar on screen
+playAvatar = Image.open(f'./player/{username}.png')
+background.paste(playAvatar, [35, 15], playAvatar)
 #getting all da stuff on screen
 for item in texts:
     font = ImageFont.truetype(font_path, item["font_size"])
