@@ -8,7 +8,7 @@ from io import BytesIO
 from roundcorner import add_rounded_corners
 #extract data from local replay
 
-r = Replay.from_path("./My Angel Chino - BlackY vs. Yooh - HAVOX (Long Ver.) [RESPADOGI'S INSANE] (2024-06-05) Osu.osr")
+r = Replay.from_path("./[Bau] - Hatsune Miku - Atama no Taisou [AngelHoney] (2021-12-15) Osu.osr")
 
 beatmap_hash = r.beatmap_hash
 player = r.username
@@ -105,17 +105,6 @@ texts = [
     {"type": "c50", "text": f"{str(c50)}x", "position": [70.11, 655.51], "font_size": 69.57},
     {"type": "c0", "text": f"{str(c0)}x", "position": [70.11, 790], "font_size": 69.57},
 ]
-
-# Function to check if a data entry exists and update or append
-def update_or_append_text(texts: list, type: str,  new_text: str, new_position: list[int], new_font_size: int):
-    for item in texts:
-        if item['type'] == type:
-            # Update the existing entry
-            item['position'] = new_position
-            item['font_size'] = new_font_size
-            return
-    # If not found, append the new entry
-    texts.append({"type": type, "text": new_text, "position": new_position, "font_size": new_font_size})
 
 existing_attr = set()
 unique_texts = []
@@ -219,20 +208,24 @@ elif map_status == "2":
     texts.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
     approved = Image.open('./statics/approved.png')
     background.paste(approved, status_icon, approved)
+    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 elif map_status == "3":
     texts.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
     qualified = Image.open('./statics/approved.png')
     background.paste(qualified, status_icon, qualified)
+    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 elif map_status == "4":
     texts.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
     loved = Image.open('./statics/loved.png')
     background.paste(loved, [1675, 17], loved)
+    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 #get the player avatar on screen
 playAvatar = Image.open(f'./player/{username}.png')
 background.paste(playAvatar, [35, 15], playAvatar)
+
 #getting all da stuff on screen
 for item in texts:
     font = ImageFont.truetype(font_path, item["font_size"])
