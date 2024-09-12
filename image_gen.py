@@ -66,7 +66,9 @@ if not os.path.exists(f'./player/{username}.png'):
 
     else:
         print(f"There is something wrong, probably peppy got dunked")
-    
+else:
+    print(f'Existed an image at ./player/{username}.png')
+
 #Mod flags
 NoMod       =  0
 NoFail      =  1 << 0
@@ -226,12 +228,32 @@ elif map_status == "4":
 playAvatar = Image.open(f'./player/{username}.png')
 background.paste(playAvatar, [35, 15], playAvatar)
 
+mods = {
+    NoFail: Image.open('./statics/nf.png'),
+    DoubleTime: Image.open('./statics/dt.png'),
+    Easy: Image.open('./statics/ez.png'),
+    Flashlight: Image.open('./statics/fl.png'),
+    HardRock: Image.open('./statics/hr.png'),
+    Hidden: Image.open('./statics/hd.png'),
+    HalfTime: Image.open('./statics/ht.png'),
+    Nightcore: Image.open('./statics/nc.png')
+}
+
+mod_flags = r.mods.value
+
+mod_selection = [mods[mod] for mod in mods if mod_flags & mod]
+
+mod_pos = [(800, 730), (840, 730), (880, 730), (920, 730)]
+
+for i, mod_img in enumerate(mod_selection):
+    if i < len(mod_pos):
+        background.paste(mod_img, mod_pos[i], mod_img)
+
 #getting all da stuff on screen
 for item in texts:
     font = ImageFont.truetype(font_path, item["font_size"])
     draw.text(item["position"], item["text"], font=font, fill="white")
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
-
-#background.show()
+#fuck the background, why there is no function to define the layer for each item.
 background.save(f"./tests/{player} on {beatmap_name} [{diff_name}].png")
