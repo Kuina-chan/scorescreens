@@ -8,7 +8,7 @@ from io import BytesIO
 from roundcorner import add_rounded_corners
 #extract data from local replay
 
-r = Replay.from_path("./[Bau] - Hatsune Miku - Atama no Taisou [AngelHoney] (2021-12-15) Osu.osr")
+r = Replay.from_path("./replays/[Bau] - Hatsune Miku - Atama no Taisou [AngelHoney] (2021-12-15) Osu.osr")
 
 beatmap_hash = r.beatmap_hash
 player = r.username
@@ -92,7 +92,6 @@ playcombo = f"{play_maxcombo}/{max_combo}X"
 
 texts = [
     {"type": "player", "text": f"{player}", "position": [244, 47.74], "font_size": 138.58},
-    {"type": "beatmap_name", "text": f"{beatmap_name}", "position": (1425, 875.2), "font_size": 60},
     {"type": "playcombo", "text": f"{playcombo}", "position": (48.5, 968.8), "font_size": 70},
     {"type": "play_accuracy", "text": f"{play_accuracy:.2%}","position": [900, 951.8], "font_size": 90},
     {"type": "circle_size", "text": f"CS: {circle_size}", "position": [1774.41, 642], "font_size": 61.34},
@@ -161,7 +160,7 @@ else:
     background.paste(D_grade, grade_pos, D_grade)
 
 #handling text length
-#handling combo
+    #handling combo
 combo_based_position = 48.5
 combo_increment = 7
 
@@ -170,7 +169,7 @@ for item in texts:
     if item['type'] == "playcombo":
         item['position'] = [combo_position, 968.8]
 
-#handling mapper
+    #handling mapper
 mapper_base_position = 1575.1
 position_increment = 8.5
 
@@ -180,7 +179,7 @@ for item in texts:
     if item['type'] == "mapper":
         item['position'] = [adjusted_position, 95.1]
 
-#handling hit counter:
+    #handling hit counter:
 count_based_pos = 70.11
 count_increment = 9.86
 c300_pos = count_based_pos + (1 - len(str(c300)) * count_increment)
