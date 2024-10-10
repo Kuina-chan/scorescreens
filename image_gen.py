@@ -38,10 +38,6 @@ else:
     diff_name = data["diffName"]
     grade = data["grade"]
 
-if approach_rate >= 10:
-    approach_rate = 10
-if overall_diff >= 10:
-    overall_diff = 10
 #extract player avatar
 if not os.path.exists(f'./player/{username}.png'):
     user = f"https://osu.ppy.sh/api/get_user?k={userAPI}&u={username}"
