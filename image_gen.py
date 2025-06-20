@@ -2,7 +2,6 @@ import requests
 import os
 from typing import Final
 from dotenv import load_dotenv
-from osrparse import Replay
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from roundcorner import add_rounded_corners
@@ -11,32 +10,38 @@ import json
 load_dotenv()
 userAPI: Final[str] = os.getenv("osu_API")
 
-mapData = requests.get(url="http://localhost:20727/json")
+mapData = requests.get(url="http://localhost:24050/json")
 if not mapData.status_code == 200:
     print(f"Please check if either osu! is running or StreamCompanion is running")
 else:
-    data = json.loads(mapData.content.decode("utf-8-sig"))
-    max_combo = data["maxCombo"]
-    circle_size = data["mCS"]
-    overall_diff = data["mOD"]
-    approach_rate = data['mAR']
-    drain_HP = data["mHP"]
-    beatmap_BPM = data["mMainBpm"]
-    star_rating = data["mStars"]
-    mapper = data["creator"]
-    play_accuracy = data["acc"]
-    username = data["username"]
-    beatmap_hash = data["md5"]
-    play_maxcombo = data["currentMaxCombo"]
-    c300 = data["c300"]
-    c100 = data["c100"]
-    c50 = data["c50"]
-    c0 = data["miss"]
+    data = json.loads(mapData.content)
+    #map stats:
+    max_combo = data["menu"]["bm"]["stats"]["maxCombo"]
+    circle_size = data["menu"]["bm"]["stats"]["CS"]
+    overall_diff = data["menu"]["bm"]["stats"]["OD"]
+    approach_rate = data["menu"]["bm"]["stats"]['AR']
+    drain_HP = data["menu"]["bm"]["stats"]["HP"]
+    beatmap_BPM = data["menu"]["bm"]["stats"]["BPM"]["common"]
+    star_rating = data["menu"]["bm"]["stats"]["fullSR"]
+    mapper = data["menu"]["bm"]["metadata"]["mapper"]
+    
+    beatmap_hash = data["menu"]["bm"]["md5"]
+    titleUnicode = data["menu"]["bm"]["metadata"]["title"]
+    diff_name = data["menu"]["bm"]["metadata"]["difficulty"]
+    #result from the replay file
+    username = data["resultsScreen"]["name"]
+    play_maxcombo = data["resultsScreen"]["maxCombo"]
+    play_accuracy = data["resultsScreen"]["accuracy"]
+    c300 = data["resultsScreen"]["300"]
+    c100 = data["resultsScreen"]["100"]
+    c50 = data["resultsScreen"]["50"]
+    c0 = data["resultsScreen"]["0"]
+    mods = data["resultsScreen"]["mods"]["str"]
+    grade = data["resultsScreen"]["grade"]
+    #this  pp need to be fetch the Kuina way, fuck it
     playPp = data["ppIfMapEndsNow"]
-    mods = data["mods"]
-    titleUnicode = data["titleUnicode"]
-    diff_name = data["diffName"]
-    grade = data["grade"]
+
+    
 
 #extract player avatar
 if not os.path.exists(f'./player/{username}.png'):
@@ -45,8 +50,9 @@ if not os.path.exists(f'./player/{username}.png'):
     if user_data.status_code == 200:
         a_data = user_data.json()
         userID = a_data[0]['user_id']
+        print(f"Collected avatar of {username}.")
     else: 
-        print(f"There is something wrong, probably peppy got dunked")
+        print(f"There is something wrong, probably peppy got dunked.")
 
         #fetching the avatar and download it
 
@@ -55,13 +61,13 @@ if not os.path.exists(f'./player/{username}.png'):
     if avatar_data.status_code == 200:
         playerAvatar = Image.open(BytesIO(avatar_data.content))
         playerAvatar.save(f'./player/{username}.png')
-
+        print(f"Saved the avatar of {username} successfully.")
         with Image.open(f'./player/{username}.png') as PlayerAvatar:
             a = add_rounded_corners(PlayerAvatar, radius=50).resize(size=(180, 180))
             a.save(f'./player/{username}.png')
-
+            print(f"Saved the corrected avatar player.")
     else:
-        print(f"There is something wrong, probably peppy got dunked")
+        print(f"There is something wrong, probably peppy got dunked.")
 else:
     print(f'Existed an image at ./player/{username}.png')
 
@@ -84,6 +90,7 @@ beatmap_data = requests.get(url)
 if beatmap_data.status_code == 200:
     bdata = beatmap_data.json()
     map_status = bdata[0]['approved']
+    print(bdata)
 else: 
     print(f"There is something wrong, probably peppy got dunked")
 
@@ -237,6 +244,7 @@ elif map_status == "4":
 
 #get the player avatar on screen
 playAvatar = Image.open(f'./player/{username}.png')
+print(f"Loaded the player avatar")
 background.paste(playAvatar, [35, 15], playAvatar)
 
 mods_image = {
@@ -251,13 +259,6 @@ mods_image = {
 }
 mod_pos = [(800, 730), (840, 730), (880, 730), (920, 730)]
 
-selected_mods = [mod.strip() for mod in mods.split(',')]
-
-for i, mod_name in enumerate(selected_mods):
-    if mod_name in mods_image:
-        mod_img = mods_image[mod_name]
-        if i < len(mod_pos):
-            background.paste(mod_img, mod_pos[i], mod_img)
 #getting all da stuff on screen
 for item in texts:
     font = ImageFont.truetype(font_path, item["font_size"])
