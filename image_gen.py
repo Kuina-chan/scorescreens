@@ -33,7 +33,7 @@ userAPI: Final[str] = os.getenv("osu_API")
 mapData = requests.get(url="http://localhost:24050/json")
 
 if not mapData.status_code == 200:
-    print(f"Please check if either osu! is running or StreamCompanion is running")
+    print(f"Please check if either osu! is running or tosu is running correctly.")
 else:
     data = json.loads(mapData.content)
     #map stats:
@@ -56,15 +56,25 @@ else:
     c100 = data["resultsScreen"]["100"]
     c50 = data["resultsScreen"]["50"]
     c0 = data["resultsScreen"]["0"]
-    mods = data["resultsScreen"]["mods"]["str"]
+    mods_string = data["resultsScreen"]["mods"]["str"]
+    mods_num = data["resultsScreen"]["mods"]["num"]
     grade = data["resultsScreen"]["grade"]
-    #this  pp need to be fetch the Kuina way, fuck it
-    playPp = data
 
-ppData = requests.get(url="http://localhost:24050/api/calculate/pp")  
+ppData = requests.get(url=f"http://localhost:24050/api/calculate/pp?mode=0&mods={mods_num}&acc={play_accuracy}")
 
+if not ppData.status_code == 200:
+    print(f"Please check if either osu! is running or tosu is running correctly.")
+else:
+    pp_Data = json.loads(ppData.content)
+    playPp = pp_Data["pp"]
+    print(f"{playPp}")
 #extract player avatar
-if not os.path.exists(f'./player/{username}.png'):
+if not os.path.exists('./players'):
+    os.makedirs('./players')
+    print("Created a folder for player avatars at ./players")
+else:
+    print("Folder for player avatars already exists")
+if not os.path.exists(f'./players/{username}.png'):
     user = f"https://osu.ppy.sh/api/get_user?k={userAPI}&u={username}"
     user_data = requests.get(user)
     if user_data.status_code == 200:
@@ -80,16 +90,17 @@ if not os.path.exists(f'./player/{username}.png'):
     avatar_data = requests.get(avatar)
     if avatar_data.status_code == 200:
         playerAvatar = Image.open(BytesIO(avatar_data.content))
-        playerAvatar.save(f'./player/{username}.png')
+        playerAvatar.save(f'./players/{username}.png')
         print(f"Saved the avatar of {username} successfully.")
-        with Image.open(f'./player/{username}.png') as PlayerAvatar:
+        with Image.open(f'./players/{username}.png') as PlayerAvatar:
             a = add_rounded_corners(PlayerAvatar, radius=50).resize(size=(180, 180))
-            a.save(f'./player/{username}.png')
+            a.convert("RGBA")
+            a.save(f'./players/{username}.png')
             print(f"Saved the corrected avatar player.")
     else:
         print(f"There is something wrong, probably peppy got dunked.")
 else:
-    print(f'Existed an image at ./player/{username}.png')
+    print(f'Existed an image at ./players/{username}.png')
 
 #Mod flags
 NoMod       =  "None"
@@ -110,7 +121,6 @@ beatmap_data = requests.get(url)
 if beatmap_data.status_code == 200:
     bdata = beatmap_data.json()
     map_status = bdata[0]['approved']
-    print(bdata)
 else: 
     print(f"There is something wrong, probably peppy got dunked")
 
@@ -122,7 +132,7 @@ font_path = "./fonts/BEBASNEUE-REGULAR.TTF"
 
 playcombo = f"{play_maxcombo}/{max_combo}X"
 
-texts = [
+texts_fields = [
     {"type": "player", "text": f"{username}", "position": [244, 47.74], "font_size": 138.58},
     {"type": "playcombo", "text": f"{playcombo}", "position": (48.5, 968.8), "font_size": 70},
     {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [900, 951.8], "font_size": 90},
@@ -139,62 +149,62 @@ texts = [
 
 existing_attr = set()
 unique_texts = []
-for item in texts:
+for item in texts_fields:
     if item['type'] not in existing_attr:
         unique_texts.append(item)
         existing_attr.add(item['type'])
 
-texts = unique_texts
+texts_fields = unique_texts
 
 #handling SS plays
 if play_accuracy == 1.0:
-    for item in texts:
+    for item in texts_fields:
         if item['type'] == "play_accuracy":
             item['position'] = [875, 951.8]
 
 if approach_rate >= 10:
     approach_rate = 10
-    texts.append({"type": "approach_rate", "text": f"AR: {int(approach_rate)}","position": [1774.41, 329.3], "font_size": 61.34})
+    texts_fields.append({"type": "approach_rate", "text": f"AR: {int(approach_rate)}","position": [1774.41, 329.3], "font_size": 61.34})
 else: 
-    texts.append({"type": "approach_rate", "text": f"AR: {approach_rate:.1f}","position": [1774.41, 329.3], "font_size": 61.34},)
+    texts_fields.append({"type": "approach_rate", "text": f"AR: {approach_rate:.1f}","position": [1774.41, 329.3], "font_size": 61.34})
 if overall_diff >= 10:
     overall_diff = 10
-    texts.append({"type": "overall_diff", "text": f"OD: {overall_diff}","position": [1774.41, 537.45], "font_size": 61.34})
+    texts_fields.append({"type": "overall_diff", "text": f"OD: {overall_diff}","position": [1774.41, 537.45], "font_size": 61.34})
 else:
-    {"type": "overall_diff", "text": f"OD: {overall_diff:.1f}","position": [1774.41, 537.45], "font_size": 61.34},
+    texts_fields.append({"type": "overall_diff", "text": f"OD: {overall_diff:.1f}","position": [1774.41, 537.45], "font_size": 61.34})
 
 #handling pp
 formattedPp = int(playPp)
 if formattedPp < 1000:
-    texts.append({"type": "pp", "text": f"{formattedPp}pp", "position": [400, 850], "font_size": 201})
+    texts_fields.append({"type": "pp", "text": f"{formattedPp}pp", "position": [400, 850], "font_size": 201})
 elif formattedPp > 1000:
-    texts.append({"type": "pp", "text": f"{formattedPp}pp", "position": [360, 860], "font_size": 195})
+    texts_fields.append({"type": "pp", "text": f"{formattedPp}pp", "position": [360, 860], "font_size": 195})
 
 #handling grade
 grade_pos = [325, 190]
 
-if grade == 0:
+if grade == "XH":
     XH_grade = Image.open('./statics/ranking-XH.png')
     background.paste(XH_grade, grade_pos, XH_grade)
-elif grade == 2:
+elif grade == "X":
     SS_grade = Image.open('./statics/ranking-X.png')
     background.paste(SS_grade, grade_pos, SS_grade)
-elif grade == 1:
+elif grade == "SH":
     SH_grade = Image.open('./statics/ranking-SH.png')
     background.paste(SH_grade, grade_pos, SH_grade)
-elif grade == 3:
+elif grade == "S":
     S_grade = Image.open('./statics/ranking-S.png')
     background.paste(S_grade, grade_pos, S_grade)
-elif grade == 4:
+elif grade == "A":
     A_grade = Image.open('./statics/ranking-A.png')
     background.paste(A_grade, grade_pos, A_grade)  
-elif grade == 5:
+elif grade == "B":
     B_grade = Image.open('./statics/ranking-B.png')
     background.paste(B_grade, grade_pos, B_grade)
-elif (grade == 6):
+elif (grade == "C"):
     C_grade = Image.open('./statics/ranking-C.png')
     background.paste(C_grade, grade_pos, C_grade)
-elif grade == 7:
+elif grade == "D":
     D_grade = Image.open('./statics/ranking-D.png')
     background.paste(D_grade, grade_pos, D_grade)
 
@@ -204,7 +214,7 @@ combo_based_position = 48.5
 combo_increment = 7
 
 combo_position = combo_based_position + (10 - len(playcombo))*combo_increment
-for item in texts:
+for item in texts_fields:
     if item['type'] == "playcombo":
         item['position'] = [combo_position, 968.8]
 
@@ -214,7 +224,7 @@ position_increment = 8.5
 
 adjusted_position = mapper_base_position + (14 - len(mapper)) * position_increment
 
-for item in texts:
+for item in texts_fields:
     if item['type'] == "mapper":
         item['position'] = [adjusted_position, 95.1]
 
@@ -226,7 +236,7 @@ c100_pos = count_based_pos + (1 - len(str(c100)) * count_increment)
 c50_pos = count_based_pos + (1 - len(str(c50)) * count_increment)
 c0_pos = count_based_pos + (1 - len(str(c0)) * count_increment)
 
-for item in texts:
+for item in texts_fields:
     if item['type'] == "c100":
         item['position'] = [c100_pos, 523.1]
     elif item['type'] == "c300":
@@ -240,32 +250,33 @@ for item in texts:
 #checking map status
 status_icon = [1670, 15]
 if map_status == "1":
-    texts.append({"type": "map status", "text": "Ranked", "position": [1507, 15], "font_size": 47})
+    texts_fields.append({"type": "map status", "text": "Ranked", "position": [1507, 15], "font_size": 47})
     ranked = Image.open('./statics/ranked blue.png')
     background.paste(ranked, status_icon, ranked)
 
 elif map_status == "2":
-    texts.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
+    texts_fields.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
     approved = Image.open('./statics/approved.png')
     background.paste(approved, status_icon, approved)
-    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 elif map_status == "3":
-    texts.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
+    texts_fields.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
     qualified = Image.open('./statics/approved.png')
     background.paste(qualified, status_icon, qualified)
-    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 elif map_status == "4":
-    texts.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
+    texts_fields.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
     loved = Image.open('./statics/loved.png')
     background.paste(loved, [1675, 17], loved)
-    texts.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
 
 #get the player avatar on screen
-playAvatar = Image.open(f'./player/{username}.png')
+playerAvatar = Image.open(f'./players/{username}.png')
+
 print(f"Loaded the player avatar")
-background.paste(playAvatar, [35, 15], playAvatar)
+background.paste(playerAvatar, [35, 15], playerAvatar)
 
 mods_image = {
     NoFail: Image.open('./statics/nf.png'),
@@ -280,7 +291,7 @@ mods_image = {
 mod_pos = [(800, 730), (840, 730), (880, 730), (920, 730)]
 
 #getting all da stuff on screen
-for item in texts:
+for item in texts_fields:
     font = ImageFont.truetype(font_path, item["font_size"])
     draw.text(item["position"], item["text"], font=font, fill="white")
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
