@@ -2,5 +2,5 @@
 .env
 tests/
 __pycache__/
-player/
+players/
 sample.json
