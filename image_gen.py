@@ -1,4 +1,5 @@
 import requests
+import psutil
 import os
 from typing import Final
 from dotenv import load_dotenv
@@ -6,11 +7,31 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from roundcorner import add_rounded_corners
 import json
-#extract data from beatmap online
+import time
+import sys
+#detecting if osu and tosu is running
+def is_program_running(process_name):
+    for proc in psutil.process_iter(['name']):
+        try:
+            # Check if process name matches
+            if process_name.lower() in proc.info['name'].lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            # Handle potential errors if a process disappears or access is denied
+            pass
+    return False
+
+if not is_program_running("tosu.exe") and is_program_running("osu!.exe"):
+    print(f"No instance of tosu and osu! detected! Quitting...")
+    time.sleep(3)
+    sys.exit()
+  
+#extract data from beatmap using tosu
 load_dotenv()
 userAPI: Final[str] = os.getenv("osu_API")
 
 mapData = requests.get(url="http://localhost:24050/json")
+
 if not mapData.status_code == 200:
     print(f"Please check if either osu! is running or StreamCompanion is running")
 else:
@@ -24,7 +45,6 @@ else:
     beatmap_BPM = data["menu"]["bm"]["stats"]["BPM"]["common"]
     star_rating = data["menu"]["bm"]["stats"]["fullSR"]
     mapper = data["menu"]["bm"]["metadata"]["mapper"]
-    
     beatmap_hash = data["menu"]["bm"]["md5"]
     titleUnicode = data["menu"]["bm"]["metadata"]["title"]
     diff_name = data["menu"]["bm"]["metadata"]["difficulty"]
@@ -39,9 +59,9 @@ else:
     mods = data["resultsScreen"]["mods"]["str"]
     grade = data["resultsScreen"]["grade"]
     #this  pp need to be fetch the Kuina way, fuck it
-    playPp = data["ppIfMapEndsNow"]
+    playPp = data
 
-    
+ppData = requests.get(url="http://localhost:24050/api/calculate/pp")  
 
 #extract player avatar
 if not os.path.exists(f'./player/{username}.png'):
