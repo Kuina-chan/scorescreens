@@ -102,19 +102,6 @@ if not os.path.exists(f'./players/{username}.png'):
 else:
     print(f'Existed an image at ./players/{username}.png')
 
-#Mod flags
-NoMod       =  "None"
-NoFail      =  "NF"
-Easy        =  "EZ"
-Hidden      =  "HD"
-HardRock    =  "HR"
-SuddenDeath =  "SD"
-DoubleTime  =  "DT"
-Relax       =  "RX"
-HalfTime    =  "HT"
-Nightcore   =  "NC"
-Flashlight  =  "FL"
-
 url = f"https://osu.ppy.sh/api/get_beatmaps?k={userAPI}&h={beatmap_hash}"
 
 beatmap_data = requests.get(url)
@@ -157,7 +144,7 @@ for item in texts_fields:
 texts_fields = unique_texts
 
 #handling SS plays
-if play_accuracy == 1.0:
+if play_accuracy == 100.00:
     for item in texts_fields:
         if item['type'] == "play_accuracy":
             item['position'] = [875, 951.8]
@@ -278,16 +265,6 @@ playerAvatar = Image.open(f'./players/{username}.png')
 print(f"Loaded the player avatar")
 background.paste(playerAvatar, [35, 15], playerAvatar)
 
-mods_image = {
-    NoFail: Image.open('./statics/nf.png'),
-    DoubleTime: Image.open('./statics/dt.png'),
-    Easy: Image.open('./statics/ez.png'),
-    Flashlight: Image.open('./statics/fl.png'),
-    HardRock: Image.open('./statics/hr.png'),
-    Hidden: Image.open('./statics/hd.png'),
-    HalfTime: Image.open('./statics/ht.png'),
-    Nightcore: Image.open('./statics/nc.png')
-}
 mod_pos = [(800, 730), (840, 730), (880, 730), (920, 730)]
 
 #getting all da stuff on screen
