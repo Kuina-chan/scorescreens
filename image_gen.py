@@ -59,6 +59,7 @@ else:
     mods_string = data["resultsScreen"]["mods"]["str"]
     mods_num = data["resultsScreen"]["mods"]["num"]
     grade = data["resultsScreen"]["grade"]
+    submitted_time = data["resultsScreen"]["createdAt"]
 
 ppData = requests.get(url=f"http://localhost:24050/api/calculate/pp?mode=0&mods={mods_num}&acc={play_accuracy}")
 
@@ -168,7 +169,7 @@ elif formattedPp > 1000:
     texts_fields.append({"type": "pp", "text": f"{formattedPp}pp", "position": [360, 860], "font_size": 195})
 
 #handling grade
-grade_pos = [325, 190]
+grade_pos = [350, 230]
 
 if grade == "XH":
     XH_grade = Image.open('./statics/ranking-XH.png')
@@ -205,7 +206,7 @@ for item in texts_fields:
     if item['type'] == "playcombo":
         item['position'] = [combo_position, 968.8]
 
-    #handling mapper
+#handling mapper
 mapper_base_position = 1575.1
 position_increment = 8.5
 
@@ -215,7 +216,7 @@ for item in texts_fields:
     if item['type'] == "mapper":
         item['position'] = [adjusted_position, 95.1]
 
-    #handling hit counter:
+#handling hit counter:
 count_based_pos = 70.11
 count_increment = 9.86
 c300_pos = count_based_pos + (1 - len(str(c300)) * count_increment)
@@ -265,9 +266,42 @@ playerAvatar = Image.open(f'./players/{username}.png')
 print(f"Loaded the player avatar")
 background.paste(playerAvatar, [35, 15], playerAvatar)
 
-mod_pos = [(800, 730), (840, 730), (880, 730), (920, 730)]
+#get the mods on the screen
+mod_pos = [(850, 730), (900, 730), (950, 730), (1000, 730)]
 
-#getting all da stuff on screen
+mods_keymap = {
+    "NF": "NoFail", "DT": "DoubleTime", "EZ": "Easy", "FL": "Flashlight",
+    "HR": "HardRock", "HD": "Hidden", "HT": "HalfTime", "NC": "Nightcore"
+}
+
+mods_image = {
+    "NoFail": Image.open('./statics/nf.png'),
+    "DoubleTime": Image.open('./statics/dt.png'),
+    "Easy": Image.open('./statics/ez.png'),
+    "Flashlight": Image.open('./statics/fl.png'),
+    "HardRock": Image.open('./statics/hr.png'),
+    "Hidden": Image.open('./statics/hd.png'),
+    "HalfTime": Image.open('./statics/ht.png'),
+    "Nightcore": Image.open('./statics/nc.png')
+}
+
+
+mod_pairs = [mods_string[i:i+2] for i in range(0, len(mods_string), 2)]
+
+for i, mod_pair in enumerate(mod_pairs):
+    if i < len(mod_pos):
+        mod_key = mods_keymap.get(mod_pair)
+        
+        if mod_key and mod_key in mods_image:
+            mod_img = mods_image[mod_key]
+            x, y = mod_pos[i]
+            background.paste(mod_img, (x, y), mod_img)
+
+#getting the time on the screen
+submitted_date = submitted_time.split("T")[0]
+texts_fields.append({"type": "Date submmited", "text": f"{submitted_date}", "position": [1072, 27.7], "font_size": 72.7})
+
+#getting all da texts on screen
 for item in texts_fields:
     font = ImageFont.truetype(font_path, item["font_size"])
     draw.text(item["position"], item["text"], font=font, fill="white")
