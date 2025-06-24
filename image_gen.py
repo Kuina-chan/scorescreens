@@ -185,7 +185,7 @@ elif grade == "S":
     background.paste(S_grade, grade_pos, S_grade)
 elif grade == "A":
     A_grade = Image.open('./statics/ranking-A.png')
-    background.paste(A_grade, grade_pos, A_grade)  
+    background.paste(A_grade, [300, 230], A_grade)  
 elif grade == "B":
     B_grade = Image.open('./statics/ranking-B.png')
     background.paste(B_grade, grade_pos, B_grade)
