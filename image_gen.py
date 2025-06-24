@@ -246,19 +246,19 @@ elif map_status == "2":
     texts_fields.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
     approved = Image.open('./statics/approved.png')
     background.paste(approved, status_icon, approved)
-    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 elif map_status == "3":
     texts_fields.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
     qualified = Image.open('./statics/approved.png')
     background.paste(qualified, status_icon, qualified)
-    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 elif map_status == "4":
     texts_fields.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
     loved = Image.open('./statics/loved.png')
     background.paste(loved, [1675, 17], loved)
-    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [505 ,805], "font_size": 47})
+    texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 #get the player avatar on screen
 playerAvatar = Image.open(f'./players/{username}.png')
