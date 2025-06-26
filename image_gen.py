@@ -82,9 +82,10 @@ else:
     submitted_time = data["resultsScreen"]["createdAt"]
 
 
-invalid_chars_pattern = re.compile(r'[<>:"/\\|?*]|\x00|[\x01-\x1F]')
+invalid_chars_pattern = re.compile(r'[<>:"/\\|?*\x00-\x1F]')
 
 sanitized_title = invalid_chars_pattern.sub('_', titleUnicode)
+sanitized_diffName = invalid_chars_pattern.sub('_', diff_name)
 
 if data["resultsScreen"]["name"] == "":
     print(f"No replay is selected. Quitting...")
@@ -220,7 +221,13 @@ elif grade == "D":
     background.paste(D_grade, grade_pos, D_grade)
 
 #handling text length
-    #handling combo
+#handling player name
+if len(str(username)) > 13:
+    for item in texts_fields:
+        if item['type'] == "player":
+            item['font_size'] = 115
+
+#handling combo
 combo_based_position = 48.5
 combo_increment = 7
 
@@ -326,29 +333,24 @@ submitted_date = submitted_time.split("T")[0]
 texts_fields.append({"type": "Date submmited", "text": f"{submitted_date}", "position": [1072, 27.7], "font_size": 72.7})
 
 #handling map name and map diff
-map_base_position = 1600
-map_text_increment = 9.86
-map_pos_x = map_base_position + (1 - len(str(map_name)) * map_text_increment)
 
-map_diff_position = 1615
-map_diff_pos_x = map_diff_position + (1 - len(str(diff_name)) * map_text_increment)
-
-mapName_length = len(str(diff_name))
+mapName_length = len(str(map_name))
 if mapName_length > 40: # Check for the largest condition first
-    font_size_name = 20
+    font_size_name = 35
 elif mapName_length > 20: # Then check the next largest
-    font_size_name = 40
+    font_size_name = 45
 else: # For all other cases (diffName_length <= 20)
     font_size_name = 69 # Or whatever font size you want for lengths <= 20
 
-texts_fields.append({"type": "map_Name", "text": f"[{diff_name}]", "position": [map_diff_pos_x, 940], "font_size": 50, "anchor": "mm"})
-texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [map_pos_x, 865], "font_size": font_size_name, "anchor": "mm"})
+texts_fields.append({"type": "map_Diff", "text": f"[{diff_name}]", "position": [1600, 972.7], "font_size": 50, "anchor": "mm"})
+texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [1600, 900], "font_size": font_size_name, "anchor": "mm"})
 #getting all da texts on screen
 for item in texts_fields:
     font = ImageFont.truetype(font_path, item["font_size"])
-    draw.text(item["position"], item["text"], font=font, fill="white")
+    anchor_value = item.get("anchor", "la") 
+    draw.text(item["position"], item["text"], font=font, fill="white", anchor=anchor_value)
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
 #fuck the background, why there is no function to define the layer for each item.
-background.save(f"./tests/{username} on {sanitized_title} [{diff_name}].png")
+background.save(f"./tests/{username} on {sanitized_title} [{sanitized_diffName}].png")
 #stop_application("tosu.exe")

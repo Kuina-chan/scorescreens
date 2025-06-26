@@ -6,3 +6,4 @@ players/
 sample.json
 .gitignore
 .json
+flag fetching.py
