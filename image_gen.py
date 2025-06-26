@@ -335,14 +335,22 @@ texts_fields.append({"type": "Date submmited", "text": f"{submitted_date}", "pos
 #handling map name and map diff
 
 mapName_length = len(str(map_name))
-if mapName_length > 40: # Check for the largest condition first
+if mapName_length > 40:
     font_size_name = 35
-elif mapName_length > 20: # Then check the next largest
+elif mapName_length > 20:
     font_size_name = 45
-else: # For all other cases (diffName_length <= 20)
-    font_size_name = 69 # Or whatever font size you want for lengths <= 20
+else: 
+    font_size_name = 69 
 
-texts_fields.append({"type": "map_Diff", "text": f"[{diff_name}]", "position": [1600, 972.7], "font_size": 50, "anchor": "mm"})
+mapDiff_length = len(str(diff_name))
+if mapDiff_length < 20:
+    font_size_diff = 50
+elif mapDiff_length < 30:
+    font_size_diff = 30
+else:
+    font_size_diff = 15
+
+texts_fields.append({"type": "map_Diff", "text": f"[{diff_name}]", "position": [1600, 972.7], "font_size": font_size_diff, "anchor": "mm"})
 texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [1600, 900], "font_size": font_size_name, "anchor": "mm"})
 #getting all da texts on screen
 for item in texts_fields:
