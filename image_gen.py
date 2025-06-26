@@ -346,9 +346,9 @@ mapDiff_length = len(str(diff_name))
 if mapDiff_length < 20:
     font_size_diff = 50
 elif mapDiff_length < 30:
-    font_size_diff = 30
-else:
-    font_size_diff = 15
+    font_size_diff = 45
+elif mapDiff_length < 50:
+    font_size_diff = 40
 
 texts_fields.append({"type": "map_Diff", "text": f"[{diff_name}]", "position": [1600, 972.7], "font_size": font_size_diff, "anchor": "mm"})
 texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [1600, 900], "font_size": font_size_name, "anchor": "mm"})
