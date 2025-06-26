@@ -9,22 +9,41 @@ from roundcorner import add_rounded_corners
 import json
 import time
 import sys
-#detecting if osu and tosu is running
-def is_program_running(process_name):
-    for proc in psutil.process_iter(['name']):
-        try:
-            # Check if process name matches
-            if process_name.lower() in proc.info['name'].lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            # Handle potential errors if a process disappears or access is denied
-            pass
-    return False
+import re
+# Track the status of each required program
+tosu_running = False
+osu_running = False
 
-if not is_program_running("tosu.exe") and is_program_running("osu!.exe"):
-    print(f"No instance of tosu and osu! detected! Quitting...")
-    time.sleep(3)
+# Iterate through all running processes
+for proc in psutil.process_iter(['name']):
+    try:
+        current_process_name = proc.info['name'].lower()
+        
+        if "tosu.exe" in current_process_name:
+            tosu_running = True
+        
+        if "osu!.exe" in current_process_name:
+            osu_running = True
+            
+        if tosu_running and osu_running:
+            break
+
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        pass
+
+# Check if both required programs are running
+if not (tosu_running and osu_running):
+    missing_programs = []
+    if not tosu_running:
+        missing_programs.append("tosu.exe")
+    if not osu_running:
+        missing_programs.append("osu!.exe")
+    
+    print(f"The following required programs are not detected: {', '.join(missing_programs)}! Quitting...")
+    time.sleep(2)
     sys.exit()
+else:
+    print("Both tosu.exe and osu!.exe are detected. Continuing...")
   
 #extract data from beatmap using tosu
 load_dotenv()
@@ -45,7 +64,8 @@ else:
     beatmap_BPM = data["menu"]["bm"]["stats"]["BPM"]["common"]
     star_rating = data["menu"]["bm"]["stats"]["fullSR"]
     mapper = data["menu"]["bm"]["metadata"]["mapper"]
-    beatmap_hash = data["menu"]["bm"]["md5"]
+    map_status = data["menu"]["bm"]["rankedStatus"]
+    map_name = data["menu"]["bm"]["metadata"]["title"]
     titleUnicode = data["menu"]["bm"]["metadata"]["title"]
     diff_name = data["menu"]["bm"]["metadata"]["difficulty"]
     #result from the replay file
@@ -61,6 +81,18 @@ else:
     grade = data["resultsScreen"]["grade"]
     submitted_time = data["resultsScreen"]["createdAt"]
 
+
+invalid_chars_pattern = re.compile(r'[<>:"/\\|?*]|\x00|[\x01-\x1F]')
+
+sanitized_title = invalid_chars_pattern.sub('_', titleUnicode)
+
+if data["resultsScreen"]["name"] == "":
+    print(f"No replay is selected. Quitting...")
+    time.sleep(1)
+    sys.exit()
+else:
+    print(f"Replay of {username} on {map_name} loaded! Getting pp value...")
+
 ppData = requests.get(url=f"http://localhost:24050/api/calculate/pp?mode=0&mods={mods_num}&acc={play_accuracy}")
 
 if not ppData.status_code == 200:
@@ -68,7 +100,7 @@ if not ppData.status_code == 200:
 else:
     pp_Data = json.loads(ppData.content)
     playPp = pp_Data["pp"]
-    print(f"{playPp}")
+
 #extract player avatar
 if not os.path.exists('./players'):
     os.makedirs('./players')
@@ -92,25 +124,16 @@ if not os.path.exists(f'./players/{username}.png'):
     if avatar_data.status_code == 200:
         playerAvatar = Image.open(BytesIO(avatar_data.content))
         playerAvatar.save(f'./players/{username}.png')
-        print(f"Saved the avatar of {username} successfully.")
         with Image.open(f'./players/{username}.png') as PlayerAvatar:
             a = add_rounded_corners(PlayerAvatar, radius=50).resize(size=(180, 180))
             a.convert("RGBA")
             a.save(f'./players/{username}.png')
-            print(f"Saved the corrected avatar player.")
+            print(f"Saved the avatar of {username} successfully.")
     else:
         print(f"There is something wrong, probably peppy got dunked.")
 else:
     print(f'Existed an image at ./players/{username}.png')
 
-url = f"https://osu.ppy.sh/api/get_beatmaps?k={userAPI}&h={beatmap_hash}"
-
-beatmap_data = requests.get(url)
-if beatmap_data.status_code == 200:
-    bdata = beatmap_data.json()
-    map_status = bdata[0]['approved']
-else: 
-    print(f"There is something wrong, probably peppy got dunked")
 
 #creating the image
 background = Image.open("./deps/bone.png")
@@ -237,24 +260,25 @@ for item in texts_fields:
 
 #checking map status
 status_icon = [1670, 15]
-if map_status == "1":
+
+if map_status == 4:
     texts_fields.append({"type": "map status", "text": "Ranked", "position": [1507, 15], "font_size": 47})
     ranked = Image.open('./statics/ranked blue.png')
     background.paste(ranked, status_icon, ranked)
 
-elif map_status == "2":
+elif map_status == 5:
     texts_fields.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
     approved = Image.open('./statics/approved.png')
     background.paste(approved, status_icon, approved)
     texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
-elif map_status == "3":
+elif map_status == 6:
     texts_fields.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
     qualified = Image.open('./statics/approved.png')
     background.paste(qualified, status_icon, qualified)
     texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
-elif map_status == "4":
+elif map_status == 7:
     texts_fields.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
     loved = Image.open('./statics/loved.png')
     background.paste(loved, [1675, 17], loved)
@@ -301,6 +325,24 @@ for i, mod_pair in enumerate(mod_pairs):
 submitted_date = submitted_time.split("T")[0]
 texts_fields.append({"type": "Date submmited", "text": f"{submitted_date}", "position": [1072, 27.7], "font_size": 72.7})
 
+#handling map name and map diff
+map_base_position = 1600
+map_text_increment = 9.86
+map_pos_x = map_base_position + (1 - len(str(map_name)) * map_text_increment)
+
+map_diff_position = 1615
+map_diff_pos_x = map_diff_position + (1 - len(str(diff_name)) * map_text_increment)
+
+mapName_length = len(str(diff_name))
+if mapName_length > 40: # Check for the largest condition first
+    font_size_name = 20
+elif mapName_length > 20: # Then check the next largest
+    font_size_name = 40
+else: # For all other cases (diffName_length <= 20)
+    font_size_name = 69 # Or whatever font size you want for lengths <= 20
+
+texts_fields.append({"type": "map_Name", "text": f"[{diff_name}]", "position": [map_diff_pos_x, 940], "font_size": 50, "anchor": "mm"})
+texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [map_pos_x, 865], "font_size": font_size_name, "anchor": "mm"})
 #getting all da texts on screen
 for item in texts_fields:
     font = ImageFont.truetype(font_path, item["font_size"])
@@ -308,5 +350,5 @@ for item in texts_fields:
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
 #fuck the background, why there is no function to define the layer for each item.
-background.save(f"./tests/{username} on {titleUnicode} [{diff_name}].png")
+background.save(f"./tests/{username} on {sanitized_title} [{diff_name}].png")
 #stop_application("tosu.exe")
