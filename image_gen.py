@@ -55,6 +55,7 @@ if not mapData.status_code == 200:
     print(f"Please check if either osu! is running or tosu is running correctly.")
 else:
     data = json.loads(mapData.content)
+    #background related 
     #map stats:
     max_combo = data["menu"]["bm"]["stats"]["maxCombo"]
     circle_size = data["menu"]["bm"]["stats"]["CS"]
@@ -356,7 +357,7 @@ texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [160
 for item in texts_fields:
     font = ImageFont.truetype(font_path, item["font_size"])
     anchor_value = item.get("anchor", "la") 
-    draw.text(item["position"], item["text"], font=font, fill="white", anchor=anchor_value)
+    draw.text(item["position"], item["text"], font=font, fill="white", anchor=anchor_value, stroke_fill=(0,0,0), stroke_width=2.5)
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
 if not os.path.exists("./results"):

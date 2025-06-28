@@ -1,6 +1,5 @@
-
 .env
-tests/
+results/
 __pycache__/
 players/
 sample.json
