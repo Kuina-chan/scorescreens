@@ -7,3 +7,6 @@ sample.json
 .gitignore
 .json
 flag fetching.py
+build/
+dist/
+image_gen.spec

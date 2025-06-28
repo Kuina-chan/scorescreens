@@ -359,6 +359,10 @@ for item in texts_fields:
     draw.text(item["position"], item["text"], font=font, fill="white", anchor=anchor_value)
     print(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
+if not os.path.exists("./results"):
+    os.makedirs(f"./results")
+
+background.save(f"./results/{username} on {sanitized_title} [{sanitized_diffName}].png")
 #fuck the background, why there is no function to define the layer for each item.
-background.save(f"./tests/{username} on {sanitized_title} [{sanitized_diffName}].png")
+
 #stop_application("tosu.exe")
