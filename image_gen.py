@@ -10,6 +10,8 @@ import json
 import time
 import sys
 import re
+import numpy as np
+import shutil
 # Track the status of each required program
 tosu_running = False
 osu_running = False
@@ -55,7 +57,10 @@ if not mapData.status_code == 200:
     print(f"Please check if either osu! is running or tosu is running correctly.")
 else:
     data = json.loads(mapData.content)
-    #background related 
+    #background related data:
+    osu_path = data["settings"]["folders"]["songs"]
+    background_path = data["menu"]["bm"]["path"]["full"]
+    background_true_path = f"{osu_path}\\{background_path}"
     #map stats:
     max_combo = data["menu"]["bm"]["stats"]["maxCombo"]
     circle_size = data["menu"]["bm"]["stats"]["CS"]
@@ -363,7 +368,69 @@ for item in texts_fields:
 if not os.path.exists("./results"):
     os.makedirs(f"./results")
 
-background.save(f"./results/{username} on {sanitized_title} [{sanitized_diffName}].png")
-#fuck the background, why there is no function to define the layer for each item.
+if not os.path.exists("./cache"):
+    os.makedirs(f"./cache")
 
-#stop_application("tosu.exe")
+#cropping the background:
+position = [(0,0), (0, 1080), (1200, 1080), (1450, 0)]
+# Open the image
+img = Image.open(background_true_path).convert("RGBA") # Ensure image has an alpha channel
+width, height = img.size
+print(width, height)
+# Create a mask image with the same dimensions as the original image
+mask = Image.new('L', (width, height), 0) # 'L' for 8-bit pixels, 0 for black
+
+# Draw the polygon on the mask in white (255)
+draw = ImageDraw.Draw(mask)
+draw.polygon(position, fill=255)
+
+# Apply the mask to the original image
+# This will make areas outside the polygon transparent
+
+inverted_mask = Image.eval(mask, lambda x: 255 - x) # <--- NEW LINE
+
+dim_factor = 0.6  # Adjust this value between 0.0 (fully black) and 1.0 (original brightness)
+dimmed_img_data = np.array(img) * dim_factor
+dimmed_img = Image.fromarray(dimmed_img_data.astype(np.uint8))
+
+# Create a new blank RGBA image (this will be our output image)
+# This starts completely transparent
+output_img = Image.new("RGBA", img.size)
+
+# Paste the dimmed image using the inverted mask.
+# This will put the dimmed 'outside' area onto the transparent background.
+output_img.paste(dimmed_img, (0, 0), inverted_mask)
+
+
+# Save the result
+output_img.save(f"./cache/{sanitized_title} croppedbackground.png") # <--- Changed output filename
+
+background.save(f"./cache/{username} on {sanitized_title} [{sanitized_diffName}].png")
+
+
+final_img = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
+background_layer = Image.open(f"./cache/{sanitized_title} croppedbackground.png")
+data_layer = Image.open(f"./cache/{username} on {sanitized_title} [{sanitized_diffName}].png")
+
+final_img.paste(background_layer, (0, 0), background_layer)
+final_img.paste(data_layer, (0, 0), data_layer)
+final_img.save(f"./results/{username} on {sanitized_title} [{sanitized_diffName}].png")
+time.sleep(1)
+cache_folder_path = "./cache"
+if os.path.exists(cache_folder_path) and os.path.isdir(cache_folder_path):
+    print(f"Clearing contents of '{cache_folder_path}'...")
+    for item in os.listdir(cache_folder_path):
+        item_path = os.path.join(cache_folder_path, item)
+        try:
+            if os.path.isfile(item_path) or os.path.islink(item_path):
+                os.remove(item_path) # Remove files and symbolic links
+            elif os.path.isdir(item_path):
+                shutil.rmtree(item_path) # Remove subdirectories and their contents
+            print(f"Removed: {item_path}")
+        except Exception as e:
+            print(f"Error removing {item_path}: {e}")
+    print("Cache folder contents cleared successfully.")
+elif not os.path.exists(cache_folder_path):
+    print(f"Cache folder '{cache_folder_path}' does not exist, no contents to clear.")
+else:
+    print(f"'{cache_folder_path}' exists but is not a directory.")
