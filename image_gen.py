@@ -373,8 +373,8 @@ if not os.path.exists("./cache"):
 
 #cropping the background:
 position = [(0,0), (0, 1080), (1200, 1080), (1450, 0)]
-# Open the image
-img = Image.open(background_true_path).convert("RGBA") # Ensure image has an alpha channel
+
+img = Image.open(background_true_path).convert("RGBA")
 width, height = img.size
 print(width, height)
 # Create a mask image with the same dimensions as the original image
@@ -385,28 +385,20 @@ draw = ImageDraw.Draw(mask)
 draw.polygon(position, fill=255)
 
 # Apply the mask to the original image
-# This will make areas outside the polygon transparent
+inverted_mask = Image.eval(mask, lambda x: 255 - x)
 
-inverted_mask = Image.eval(mask, lambda x: 255 - x) # <--- NEW LINE
-
-dim_factor = 0.6  # Adjust this value between 0.0 (fully black) and 1.0 (original brightness)
+dim_factor = 0.9  # Adjust this value between 0.0 (fully black) and 1.0 (original brightness)
 dimmed_img_data = np.array(img) * dim_factor
 dimmed_img = Image.fromarray(dimmed_img_data.astype(np.uint8))
 
-# Create a new blank RGBA image (this will be our output image)
-# This starts completely transparent
 output_img = Image.new("RGBA", img.size)
 
-# Paste the dimmed image using the inverted mask.
-# This will put the dimmed 'outside' area onto the transparent background.
 output_img.paste(dimmed_img, (0, 0), inverted_mask)
 
-
 # Save the result
-output_img.save(f"./cache/{sanitized_title} croppedbackground.png") # <--- Changed output filename
+output_img.save(f"./cache/{sanitized_title} croppedbackground.png")
 
 background.save(f"./cache/{username} on {sanitized_title} [{sanitized_diffName}].png")
-
 
 final_img = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
 background_layer = Image.open(f"./cache/{sanitized_title} croppedbackground.png")
