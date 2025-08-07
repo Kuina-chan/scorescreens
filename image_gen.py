@@ -62,7 +62,6 @@ else:
     background_path = data["menu"]["bm"]["path"]["full"]
     background_true_path = f"{osu_path}\\{background_path}"
     #map stats:
-    max_combo = data["menu"]["bm"]["stats"]["maxCombo"]
     circle_size = data["menu"]["bm"]["stats"]["CS"]
     overall_diff = data["menu"]["bm"]["stats"]["OD"]
     approach_rate = data["menu"]["bm"]["stats"]['AR']
@@ -78,7 +77,6 @@ else:
     username = data["resultsScreen"]["name"]
     play_maxcombo = data["resultsScreen"]["maxCombo"]
     play_accuracy = data["resultsScreen"]["accuracy"]
-    c300 = data["resultsScreen"]["300"]
     c100 = data["resultsScreen"]["100"]
     c50 = data["resultsScreen"]["50"]
     c0 = data["resultsScreen"]["0"]
@@ -143,23 +141,18 @@ else:
 
 
 #creating the image
-background = Image.open("./deps/bone.png")
+background = Image.open("./statics/core.png")
 draw = ImageDraw.Draw(background)
 
-font_path = "./fonts/BEBASNEUE-REGULAR.TTF"
-
-playcombo = f"{play_maxcombo}/{max_combo}X"
+font_path = "./fonts/HvDTrial_FabrikatMono-Regular-BF64d5939342747.otf"
 
 texts_fields = [
     {"type": "player", "text": f"{username}", "position": [244, 47.74], "font_size": 138.58},
-    {"type": "playcombo", "text": f"{playcombo}", "position": (48.5, 968.8), "font_size": 70},
+    {"type": "playcombo", "text": f"{play_maxcombo}", "position": [48.5, 968.8], "font_size": 70},
     {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [900, 951.8], "font_size": 90},
-    {"type": "circle_size", "text": f"CS: {circle_size:.1f}", "position": [1774.41, 642], "font_size": 61.34},
-    {"type": "drain_HP", "text": f"HP: {drain_HP:.1f}", "position": [1774.41, 748.3], "font_size": 61.34},
     {"type": "beatmap_BPM", "text": f"{int(beatmap_BPM)}BPM", "position": [1765.51, 15], "font_size": 47},
     {"type": "mapper", "text": f"{mapper}", "position": [1575.1, 95.1], "font_size": 47},
-    {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34},
-    {"type": "c300", "text": f"{str(c300)}x", "position": [26.39, 388.27], "font_size": 69.57},
+    {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34}, 
     {"type": "c100", "text": f"{str(c100)}x", "position": [70.11, 523.1], "font_size": 69.57},
     {"type": "c50", "text": f"{str(c50)}x", "position": [70.11, 655.51], "font_size": 69.57},
     {"type": "c0", "text": f"{str(c0)}x", "position": [70.11, 790], "font_size": 69.57},
@@ -237,7 +230,7 @@ if len(str(username)) > 13:
 combo_based_position = 48.5
 combo_increment = 7
 
-combo_position = combo_based_position + (10 - len(playcombo))*combo_increment
+combo_position = combo_based_position + (10 - len(play_maxcombo))*combo_increment
 for item in texts_fields:
     if item['type'] == "playcombo":
         item['position'] = [combo_position, 968.8]
@@ -255,7 +248,6 @@ for item in texts_fields:
 #handling hit counter:
 count_based_pos = 70.11
 count_increment = 9.86
-c300_pos = count_based_pos + (1 - len(str(c300)) * count_increment)
 c100_pos = count_based_pos + (1 - len(str(c100)) * count_increment)
 c50_pos = count_based_pos + (1 - len(str(c50)) * count_increment)
 c0_pos = count_based_pos + (1 - len(str(c0)) * count_increment)
@@ -263,8 +255,6 @@ c0_pos = count_based_pos + (1 - len(str(c0)) * count_increment)
 for item in texts_fields:
     if item['type'] == "c100":
         item['position'] = [c100_pos, 523.1]
-    elif item['type'] == "c300":
-        item['position'] = [c300_pos, 388.27]
     elif item['type'] == "c50":
         item['position'] = [c50_pos, 655.51]
     elif item['type'] == "c0":
@@ -333,10 +323,6 @@ for i, mod_pair in enumerate(mod_pairs):
             mod_img = mods_image[mod_key]
             x, y = mod_pos[i]
             background.paste(mod_img, (x, y), mod_img)
-
-#getting the time on the screen
-submitted_date = submitted_time.split("T")[0]
-texts_fields.append({"type": "Date submmited", "text": f"{submitted_date}", "position": [1072, 27.7], "font_size": 72.7})
 
 #handling map name and map diff
 
