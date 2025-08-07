@@ -12,3 +12,4 @@ image_gen.spec
 *.
 .vscode/
 *.ico
+temp/
