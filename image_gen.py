@@ -153,9 +153,9 @@ texts_fields = [
     {"type": "beatmap_BPM", "text": f"{int(beatmap_BPM)}BPM", "position": [1765.51, 15], "font_size": 47},
     {"type": "mapper", "text": f"{mapper}", "position": [1575.1, 95.1], "font_size": 47},
     {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34}, 
-    {"type": "c100", "text": f"{str(c100)}x", "position": [70.11, 523.1], "font_size": 69.57},
-    {"type": "c50", "text": f"{str(c50)}x", "position": [70.11, 655.51], "font_size": 69.57},
-    {"type": "c0", "text": f"{str(c0)}x", "position": [70.11, 790], "font_size": 69.57},
+    {"type": "c100", "text": f"{str(c100)}", "position": [70.11, 523.1], "font_size": 69.57},
+    {"type": "c50", "text": f"{str(c50)}", "position": [70.11, 655.51], "font_size": 69.57},
+    {"type": "c0", "text": f"{str(c0)}", "position": [70.11, 790], "font_size": 69.57},
 ]
 
 existing_attr = set()
@@ -187,12 +187,12 @@ else:
 #handling pp
 formattedPp = int(playPp)
 if formattedPp < 1000:
-    texts_fields.append({"type": "pp", "text": f"{formattedPp}pp", "position": [400, 850], "font_size": 201})
+    texts_fields.append({"type": "pp", "text": f"{formattedPp}", "position": [400, 850], "font_size": 201})
 elif formattedPp > 1000:
-    texts_fields.append({"type": "pp", "text": f"{formattedPp}pp", "position": [360, 860], "font_size": 195})
+    texts_fields.append({"type": "pp", "text": f"{formattedPp}", "position": [360, 860], "font_size": 195})
 
 #handling grade
-grade_pos = [350, 230]
+grade_pos = [750, 230]
 
 if grade == "XH":
     XH_grade = Image.open('./statics/ranking-XH.png')
@@ -230,7 +230,7 @@ if len(str(username)) > 13:
 combo_based_position = 48.5
 combo_increment = 7
 
-combo_position = combo_based_position + (10 - len(play_maxcombo))*combo_increment
+combo_position = combo_based_position + (10 - len(str(play_maxcombo)))*combo_increment
 for item in texts_fields:
     if item['type'] == "playcombo":
         item['position'] = [combo_position, 968.8]
@@ -294,7 +294,7 @@ print(f"Loaded the player avatar")
 background.paste(playerAvatar, [35, 15], playerAvatar)
 
 #get the mods on the screen
-mod_pos = [(850, 730), (900, 730), (950, 730), (1000, 730)]
+mod_pos = [(850, 950), (900, 950), (950, 950), (1000, 950)]
 
 mods_keymap = {
     "NF": "NoFail", "DT": "DoubleTime", "EZ": "Easy", "FL": "Flashlight",
@@ -302,14 +302,20 @@ mods_keymap = {
 }
 
 mods_image = {
-    "NoFail": Image.open('./statics/nf.png'),
-    "DoubleTime": Image.open('./statics/dt.png'),
-    "Easy": Image.open('./statics/ez.png'),
-    "Flashlight": Image.open('./statics/fl.png'),
-    "HardRock": Image.open('./statics/hr.png'),
-    "Hidden": Image.open('./statics/hd.png'),
-    "HalfTime": Image.open('./statics/ht.png'),
-    "Nightcore": Image.open('./statics/nc.png')
+    "NoFail": Image.open('./statics/NF.png'),
+    "DoubleTime": Image.open('./statics/DT.png'),
+    "Easy": Image.open('./statics/EZ.png'),
+    "Flashlight": Image.open('./statics/FL.png'),
+    "HardRock": Image.open('./statics/HR.png'),
+    "Hidden": Image.open('./statics/HD.png'),
+    "HalfTime": Image.open('./statics/HT.png'),
+    "Nightcore": Image.open('./statics/NC.png'),
+    "AccuracyChallenge": Image.open('./statics/AC.png'),
+    "StrictTracking": Image.open('./statics/ST.png'),
+    "Blind": Image.open('./statics/BL.png'),
+    "SuddenDeath": Image.open('./statics/SD.png'),
+    "Perfect": Image.open('./statics/PF.png'),  
+    "Daycore": Image.open('./statics/DC.png'),
 }
 
 
@@ -342,7 +348,7 @@ elif mapDiff_length < 30:
 elif mapDiff_length < 50:
     font_size_diff = 40
 
-texts_fields.append({"type": "map_Diff", "text": f"[{diff_name}]", "position": [1600, 972.7], "font_size": font_size_diff, "anchor": "mm"})
+texts_fields.append({"type": "map_Diff", "text": f"{diff_name}", "position": [1600, 972.7], "font_size": font_size_diff, "anchor": "mm"})
 texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [1600, 900], "font_size": font_size_name, "anchor": "mm"})
 #getting all da texts on screen
 for item in texts_fields:
