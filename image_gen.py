@@ -5,7 +5,7 @@ from typing import Final
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
-from roundcorner import add_rounded_corners
+from roundcorner import add_rounded_corners as rc
 import json
 import time
 import sys
@@ -154,7 +154,7 @@ if not os.path.exists(f'./players/{username}.png'):
         playerAvatar = Image.open(BytesIO(avatar_data.content))
         playerAvatar.save(f'./players/{username}.png')
         with Image.open(f'./players/{username}.png') as PlayerAvatar:
-            a = add_rounded_corners(PlayerAvatar, radius=50).resize(size=(180, 180))
+            a = rc(PlayerAvatar, radius=50).resize(size=(180, 180))
             a.convert("RGBA")
             a.save(f'./players/{username}.png')
             l.info(f"Saved the avatar of {username} successfully.")
@@ -174,15 +174,16 @@ default_font_path = "./fonts/FabrikatMono_Regular.otf"
 l.info("Loaded font")
 
 texts_fields = [
-    {"type": "player", "text": f"{username}", "position": [244, 47.74], "font_size": 138.58},
-    {"type": "playcombo", "text": f"{play_maxcombo}", "position": [48.5, 968.8], "font_size": 70},
-    {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [900, 951.8], "font_size": 90},
-    {"type": "beatmap_BPM", "text": f"{int(beatmap_BPM)}BPM", "position": [1765.51, 15], "font_size": 47},
-    {"type": "mapper", "text": f"{mapper}", "position": [1575.1, 95.1], "font_size": 47},
-    {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34}, 
-    {"type": "c100", "text": f"{str(c100)}", "position": [0, 0], "font_size": 69.57},
-    {"type": "c50", "text": f"{str(c50)}", "position": [70.11, 655.51], "font_size": 69.57},
-    {"type": "c0", "text": f"{str(c0)}", "position": [70.11, 790], "font_size": 69.57},
+    {"type": "player", "text": f"{username}", "position": [244, 47.74], "font_size": 138.58, "colour": "#FFFFFF"},
+    {"type": "playcombo", "text": f"{play_maxcombo}", "position": [48.5, 968.8], "font_size": 40, "colour": "#FFFFFF"},
+    {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [900, 951.8], "font_size": 40, "colour": "#FFFFFF"},
+    {"type": "beatmap_BPM", "text": f"{int(beatmap_BPM)}BPM", "position": [1765.51, 15], "font_size": 47, "colour": "#FFFFFF"},
+    {"type": "mapper", "text": f"{mapper}", "position": [1575.1, 95.1], "font_size": 47, "colour": "#FFFFFF"},
+    {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34, "colour": "#FFFFFF"}, 
+    #x will be re-calculte later in the code due to increament with text length 
+    {"type": "c100", "text": f"{str(c100)}", "position": [0, 0], "font_size": 40, "colour": "#f131e4"},
+    {"type": "c50", "text": f"{str(c50)}", "position": [0, 655.51], "font_size": 40, "colour": "#FFFFFF"},
+    {"type": "c0", "text": f"{str(c0)}", "position": [0, 790], "font_size": 40, "colour": "#FFFFFF"},
 ]
 
 existing_attr = set()
@@ -202,19 +203,19 @@ if play_accuracy == 100.00:
 
 if approach_rate >= 10:
     approach_rate = 10
-    texts_fields.append({"type": "approach_rate", "text": f"AR: {int(approach_rate)}","position": [1774.41, 329.3], "font_size": 61.34})
+    texts_fields.append({"type": "approach_rate", "text": f"{int(approach_rate)}","position": [1774.41, 329.3], "font_size": 40})
 else: 
-    texts_fields.append({"type": "approach_rate", "text": f"AR: {approach_rate:.1f}","position": [1774.41, 329.3], "font_size": 61.34})
+    texts_fields.append({"type": "approach_rate", "text": f"{approach_rate:.1f}","position": [1774.41, 329.3], "font_size": 40})
 if overall_diff >= 10:
     overall_diff = 10
-    texts_fields.append({"type": "overall_diff", "text": f"OD: {overall_diff}","position": [1774.41, 537.45], "font_size": 61.34})
+    texts_fields.append({"type": "overall_diff", "text": f"{overall_diff}","position": [1774.41, 537.45], "font_size": 40})
 else:
-    texts_fields.append({"type": "overall_diff", "text": f"OD: {overall_diff:.1f}","position": [1774.41, 537.45], "font_size": 61.34})
+    texts_fields.append({"type": "overall_diff", "text": f"{overall_diff:.1f}","position": [1774.41, 537.45], "font_size": 40})
 
 #handling pp
 formattedPp = int(playPp)
 if formattedPp < 1000:
-    texts_fields.append({"type": "pp", "text": f"{formattedPp}", "position": [550, 550], "font_size": 50})
+    texts_fields.append({"type": "pp", "text": f"{formattedPp}", "position": [624.02, 540], "font_size": 40})
 elif formattedPp > 1000:
     texts_fields.append({"type": "pp", "text": f"{formattedPp}", "position": [612, 540], "font_size": 40})
 
@@ -235,7 +236,7 @@ elif grade == "S":
     background.paste(S_grade, grade_pos, S_grade)
 elif grade == "A":
     A_grade = Image.open('./statics/ranking-A.png')
-    background.paste(A_grade, [300, 230], A_grade)  
+    background.paste(A_grade, grade_pos, A_grade)  
 elif grade == "B":
     B_grade = Image.open('./statics/ranking-B.png')
     background.paste(B_grade, grade_pos, B_grade)
@@ -254,13 +255,13 @@ if len(str(username)) > 13:
             item['font_size'] = 115
 
 #handling combo
-combo_based_position = 48.5
-combo_increment = 7
+combo_based_position = 555
+combo_increment = 9.86
 
 combo_position = combo_based_position + (10 - len(str(play_maxcombo)))*combo_increment
 for item in texts_fields:
     if item['type'] == "playcombo":
-        item['position'] = [combo_position, 968.8]
+        item['position'] = [combo_position, 415]
 
 #handling mapper
 mapper_base_position = 1575.1
@@ -273,7 +274,7 @@ for item in texts_fields:
         item['position'] = [adjusted_position, 95.1]
 
 #handling hit counter:
-count_based_pos = 70.11
+count_based_pos = 358
 count_increment = 9.86
 c100_pos = count_based_pos + (1 - len(str(c100)) * count_increment)
 c50_pos = count_based_pos + (1 - len(str(c50)) * count_increment)
@@ -281,11 +282,11 @@ c0_pos = count_based_pos + (1 - len(str(c0)) * count_increment)
 
 for item in texts_fields:
     if item['type'] == "c100":
-        item['position'] = [c100_pos, 523.1]
+        item['position'] = [c100_pos, 415]
     elif item['type'] == "c50":
-        item['position'] = [c50_pos, 655.51]
+        item['position'] = [c50_pos, 540]
     elif item['type'] == "c0":
-        item['position'] = [c0_pos, 790]
+        item['position'] = [c0_pos, 670]
     
 
 #checking map status
@@ -381,7 +382,8 @@ texts_fields.append({"type": "map_Name", "text": f"{map_name}", "position": [160
 for item in texts_fields:
     font = ImageFont.truetype(item.get("font", default_font_path), item["font_size"])
     anchor_value = item.get("anchor", "la") 
-    draw.text(item["position"], item["text"], font=font, fill="white", anchor=anchor_value, stroke_fill=(0,0,0), stroke_width=2.5)
+    colour = item.get("colour", "white")
+    draw.text(item["position"], item["text"], font=font, fill=colour, anchor=anchor_value, stroke_fill=(0,0,0), stroke_width=2.5)
     l.info(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
 if not os.path.exists("./results"):
