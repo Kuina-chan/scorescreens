@@ -61,7 +61,7 @@ if not (tosu_running and osu_running):
     if not osu_running:
         missing_programs.append("osu!.exe")
     
-    l.warning(f"The following required programs are not detected: {', '.join(missing_programs)}! Quitting...")
+    l.critical(f"The following required programs are not detected: {', '.join(missing_programs)}! Quitting...")
     time.sleep(2)
     sys.exit()
 else:
@@ -154,7 +154,7 @@ if not os.path.exists(f'./players/{username}.png'):
         playerAvatar = Image.open(BytesIO(avatar_data.content))
         playerAvatar.save(f'./players/{username}.png')
         with Image.open(f'./players/{username}.png') as PlayerAvatar:
-            a = rc(PlayerAvatar, radius=50).resize(size=(180, 180))
+            a = rc(PlayerAvatar, radius=PlayerAvatar.width // 2).resize(size=(180, 180))
             a.convert("RGBA")
             a.save(f'./players/{username}.png')
             l.info(f"Saved the avatar of {username} successfully.")
@@ -176,7 +176,7 @@ l.info("Loaded font")
 texts_fields = [
     {"type": "player", "text": f"{username}", "position": [244, 47.74], "font_size": 138.58, "colour": "#FFFFFF"},
     {"type": "playcombo", "text": f"{play_maxcombo}", "position": [48.5, 968.8], "font_size": 40, "colour": "#FFFFFF"},
-    {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [900, 951.8], "font_size": 40, "colour": "#FFFFFF"},
+    {"type": "play_accuracy", "text": f"{play_accuracy:.2f}%","position": [597, 670], "font_size": 40, "colour": "#FFFFFF"},
     {"type": "beatmap_BPM", "text": f"{int(beatmap_BPM)}BPM", "position": [1765.51, 15], "font_size": 47, "colour": "#FFFFFF"},
     {"type": "mapper", "text": f"{mapper}", "position": [1575.1, 95.1], "font_size": 47, "colour": "#FFFFFF"},
     {"type": "star_rating", "text": f"{star_rating:.2f}*", "position": [1774.41, 433.46], "font_size": 61.34, "colour": "#FFFFFF"}, 
@@ -294,25 +294,17 @@ status_icon = [1670, 15]
 
 if map_status == 4:
     texts_fields.append({"type": "map status", "text": "Ranked", "position": [1507, 15], "font_size": 47})
-    ranked = Image.open('./statics/ranked blue.png')
-    background.paste(ranked, status_icon, ranked)
 
 elif map_status == 5:
     texts_fields.append({"type": "map status", "text": "Approved", "position": [1500.75, 18], "font_size": 40})
-    approved = Image.open('./statics/approved.png')
-    background.paste(approved, status_icon, approved)
     texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 elif map_status == 6:
     texts_fields.append({"type": "map status", "text": "Qualified", "position": [1275.51, 15], "font_size": 38})
-    qualified = Image.open('./statics/approved.png')
-    background.paste(qualified, status_icon, qualified)
     texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 elif map_status == 7:
     texts_fields.append({"type": "map status", "text": "Loved", "position": [1520, 13], "font_size": 47})
-    loved = Image.open('./statics/loved.png')
-    background.paste(loved, [1675, 17], loved)
     texts_fields.append({"type": "if ranked", "text": "*if ranked", "position": [515 ,810], "font_size": 40})
 
 #get the player avatar on screen
