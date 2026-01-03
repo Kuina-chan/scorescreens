@@ -13,6 +13,7 @@ import re
 import numpy as np
 import shutil
 import logging as l
+import hashlib
 
 logger = l.getLogger()
 
@@ -135,6 +136,7 @@ if not os.path.exists('./players'):
     l.info("Created a folder for player avatars at ./players")
 else:
     l.info("Folder for player avatars already exists")
+
 if not os.path.exists(f'./players/{username}.png'):
     user = f"https://osu.ppy.sh/api/get_user?k={userAPI}&u={username}"
     user_data = requests.get(user)
@@ -146,20 +148,33 @@ if not os.path.exists(f'./players/{username}.png'):
        l.warning(f"""There is something wrong, probably peppy got dunked.
                        Avatar will need to add manually.""")
 
-        #fetching the avatar and download it
-
+#fetching the avatar and download it
     avatar = f"https://a.ppy.sh/{userID}"
     avatar_data = requests.get(avatar)
     if avatar_data.status_code == 200:
         playerAvatar = Image.open(BytesIO(avatar_data.content))
-        playerAvatar.save(f'./players/{username}.png')
-        with Image.open(f'./players/{username}.png') as PlayerAvatar:
+        playerAvatar.save(f'./cache/{username}.png')
+        with Image.open(f'./cache/{username}.png') as PlayerAvatar:
             a = rc(PlayerAvatar, radius=PlayerAvatar.width // 2).resize(size=(180, 180))
             a.convert("RGBA")
-            a.save(f'./players/{username}.png')
-            l.info(f"Saved the avatar of {username} successfully.")
+            a.save(f'./cache/{username}.png')
+
+#checking if the file need new update
+        with Image.open(f'./cache/{username}.png') as NewPlayerAvatar:
+            with Image.open(f"./players/{username}.png") as OldPlayerAvatar:
+                newHash = hashlib.file_digest(NewPlayerAvatar, "sha1")
+                oldHash = hashlib.file_digest(OldPlayerAvatar, "sha1")
+                if newHash == oldHash:
+                    l.debug(f"""Old Avatar Hash: {oldHash}
+                    New Avatar Hash: {newHash}""")
+
+                    l.info(f"{username}'s avatar has already up-to-date. Continuing...")
+                else:
+                    shutil.copy(f"./cache/{username}.png", f"./players/{username}.png")
+                    l.info(f"Saved the avatar of {username} successfully.")
+
     else:
-       l.warning(f"""There is something wrong, probably peppy got dunked.
+        l.warning(f"""There is something wrong, probably peppy got dunked.
                        Avatar will need to add manually.""")
 else:
     l.info(f'Existed an image at ./players/{username}.png')
@@ -375,7 +390,7 @@ for item in texts_fields:
     font = ImageFont.truetype(item.get("font", default_font_path), item["font_size"])
     anchor_value = item.get("anchor", "la") 
     colour = item.get("colour", "white")
-    draw.text(item["position"], item["text"], font=font, fill=colour, anchor=anchor_value, stroke_fill=(0,0,0), stroke_width=2.5)
+    draw.text(item["position"], item["text"], font=font, fill=colour, anchor=anchor_value, stroke_fill=(0,0,0), stroke_width=2)
     l.info(", ".join('{}: {}'.format(key, val) for key, val in item.items()))
 
 if not os.path.exists("./results"):
